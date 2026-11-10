@@ -1,0 +1,5 @@
+scip-tsrs
+
+This project includes a native TypeScript checker and bundled TypeScript standard-library declarations through tsrs (Apache-2.0). The upstream notices for tsrs and TypeScript are in NOTICE-tsrs.
+
+SCIP symbol compatibility is modeled on scip-typescript (Apache-2.0), https://github.com/sourcegraph/scip-typescript. The SCIP schema and Rust bindings are from https://github.com/scip-code/scip.
