@@ -9,7 +9,7 @@ Download the archive for your platform from [GitHub Releases](https://github.com
 To build from source with Rust 1.99 or newer:
 
 ```sh
-cargo install --git https://github.com/daikonic-org/scip-tsrs --tag v0.1.0 --locked
+cargo install --git https://github.com/daikonic-org/scip-tsrs --tag v0.2.0 --locked
 ```
 
 Run the indexer with a project directory or a path to its TypeScript config. Without a project argument, it uses the current directory.
@@ -20,6 +20,8 @@ scip-tsrs scip ./tsconfig.json --project-root .
 scip-tsrs dump ./index.scip
 ```
 
+- Project references are followed automatically, including empty solution configs. Sources are never built or written; one `index.scip` contains the combined documents. `--no-project-references` restricts indexing to one config.
+- `--infer-tsconfig` supports projects without a config using an in-memory compiler configuration.
 - `--project-root` sets the base directory for SCIP document paths. The default is the config directory.
 - `--max-file-byte-size` defaults to 1,000,000 bytes. It limits emitted documents while keeping their sources available to the checker. Use `0` to emit every root file.
 - `--minimal` emits occurrence and bare symbol data for comparisons. Enrichment preserves occurrence identities, positions, and roles.
@@ -32,9 +34,9 @@ The index uses the SCIP 0.10 schema with typed ranges and explicit UTF-16 column
 
 The default output includes symbol kinds, display names, source signatures, JSDoc prose, enclosing ranges and symbols, and metadata for referenced global symbols defined outside the index. The design follows the metadata structure used by [rust-analyzer](https://github.com/rust-lang/rust-analyzer/blob/2a362a41a8eb6e090f1a12d9b712df85af6f0c33/crates/rust-analyzer/src/cli/scip.rs).
 
-Class and interface relationships follow compiler-resolved direct `extends` and `implements` clauses. Both use SCIP’s `is_implementation` bit. Instance methods and properties that match a direct base member by name and kind also set `is_reference`. The producer emits explicit `Class` and `Interface` kinds and retains the heritage occurrence in the source. Consumers that need to distinguish the exact keyword can read that syntax. [SCIP relationship semantics](https://github.com/scip-code/scip/blob/main/scip.proto) · [scip-java visitor](https://github.com/scip-code/scip-java/blob/3793579c53edb5c0a51c69315c07faca7376dc3e/scip-javac/src/main/java/org/scip_code/scip_java/javac/ScipVisitor.java)
+Class and interface relationships follow compiler-resolved direct `extends` and `implements` clauses. Both use SCIP’s `is_implementation` bit. Instance methods and properties that match a compiler-resolved base member by name and kind (including members inherited by that base) also set `is_reference`. The producer emits explicit `Class` and `Interface` kinds and retains the heritage occurrence in the source. Consumers that need to distinguish the exact keyword can read that syntax. [SCIP relationship semantics](https://github.com/scip-code/scip/blob/main/scip.proto) · [scip-java visitor](https://github.com/scip-code/scip-java/blob/3793579c53edb5c0a51c69315c07faca7376dc3e/scip-javac/src/main/java/org/scip_code/scip_java/javac/ScipVisitor.java)
 
-This is a prerelease. It indexes one config per invocation. Tests cover typed ranges, Unicode columns, local shadowing, direct heritage, and atomic output. Transitive overrides, complex mixins, project-reference orchestration, and JSX-specific parity are open areas.
+This is a prerelease. Tests cover typed ranges, Unicode columns, local shadowing, inherited interface members, project-reference graphs, in-memory configuration, and atomic output. Full override compatibility checking, complex mixins, and JSX-specific parity remain open areas.
 
 ## Development
 

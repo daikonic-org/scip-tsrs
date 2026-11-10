@@ -6,7 +6,6 @@ use tsrs_ast::{self as ast, Kind, ModifierFlags, Node, SourceFile};
 use tsrs_core::P;
 use tsrs_scanner::{get_text_of_jsdoc_comment, get_text_of_node, get_token_pos_of_node};
 
-use crate::index::descriptor;
 use crate::{node_range, scip_io, source_range};
 
 #[derive(Default)]
@@ -41,7 +40,12 @@ pub struct FileMetadata<'a> {
     pub index: &'a mut IndexMetadata,
     seen: HashSet<String>,
     definitions: Vec<(usize, P<Node>)>,
-    bases: HashMap<P<Node>, Vec<(String, P<Node>)>>,
+    bases: HashMap<P<Node>, Vec<Base>>,
+}
+
+struct Base {
+    symbol: String,
+    members: Vec<(String, P<Node>)>,
 }
 
 impl<'a> FileMetadata<'a> {
@@ -69,12 +73,18 @@ impl<'a> FileMetadata<'a> {
         }
     }
 
-    pub fn record_base(&mut self, owner: P<Node>, symbol: &str, decl: P<Node>) {
+    pub fn record_base(
+        &mut self,
+        owner: P<Node>,
+        symbol: &str,
+        decl: P<Node>,
+        members: Vec<(String, P<Node>)>,
+    ) {
         if !symbol.starts_with("local ") && is_named_type(decl) {
-            self.bases
-                .entry(owner)
-                .or_default()
-                .push((symbol.to_owned(), decl));
+            self.bases.entry(owner).or_default().push(Base {
+                symbol: symbol.to_owned(),
+                members,
+            });
         }
     }
 
@@ -83,24 +93,22 @@ impl<'a> FileMetadata<'a> {
             let info = &mut doc.symbols[index];
             let mut related = BTreeSet::new();
             if let Some(bases) = self.bases.get(&decl) {
-                for (base, _) in bases {
-                    add_relationship(info, &mut related, base.clone(), false);
+                for base in bases {
+                    add_relationship(info, &mut related, base.symbol.clone(), false);
                 }
             } else if let Some((owner, member_name, kind)) = instance_member(decl)
                 && let Some(bases) = self.bases.get(&owner)
             {
-                for (base, base_decl) in bases {
-                    for &member in base_decl.members() {
+                for base in bases {
+                    for (name, member) in &base.members {
+                        let member = *member;
                         if !instance_member(member).is_some_and(|(_, name, member_kind)| {
                             name == member_name && member_kind == kind
                         }) {
                             continue;
                         }
-                        if let Some(descriptor) = descriptor(member) {
-                            let name = format!("{base}{descriptor}");
-                            self.index.reference(&name, member);
-                            add_relationship(info, &mut related, name, true);
-                        }
+                        self.index.reference(name, member);
+                        add_relationship(info, &mut related, name.clone(), true);
                     }
                 }
             }
@@ -163,7 +171,9 @@ pub fn heritage_owner(node: P<Node>) -> Option<P<Node>> {
     }
 }
 
-fn instance_member(node: P<Node>) -> Option<(P<Node>, String, symbol_information::Kind)> {
+pub(crate) fn instance_member(
+    node: P<Node>,
+) -> Option<(P<Node>, String, symbol_information::Kind)> {
     let kind = match node.kind() {
         Kind::MethodDeclaration | Kind::MethodSignature => symbol_information::Kind::Method,
         Kind::PropertyDeclaration | Kind::PropertySignature => symbol_information::Kind::Property,

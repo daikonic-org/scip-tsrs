@@ -1,0 +1,13 @@
+# Changelog
+
+## 0.2.0
+
+- Follow TypeScript project references automatically, including empty solution configs and repeated references. Emit one index with unique documents and cross-project symbol identities.
+- Reclaim compiler programs between projects; keep the checker in-process and avoid invoking the build or writing generated files.
+- Infer a configuration in memory with `--infer-tsconfig` for projects without `tsconfig.json`.
+- Resolve inherited base members through the checker so implementations link to the declaration on the original interface or class.
+- Keep the standard SCIP schema, typed ranges, symbol naming, and atomic output. Add end-to-end tests for project graphs, cross-project references, inherited members, and inferred TypeScript/JavaScript projects.
+
+## 0.1.0
+
+Initial native indexer with pinned tsrs, SCIP 0.10 output, TypeScript-compatible symbol names, local symbols, signatures, documentation, and direct implementation relationships. Native release archives cover macOS and Linux on ARM64 and x86-64.

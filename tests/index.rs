@@ -96,6 +96,11 @@ fn enriches_types_members_and_scoped_locals_without_changing_tuples() {
     let rich = generate(directory.path(), "rich.scip", &[]);
     let minimal = generate(directory.path(), "minimal.scip", &["--minimal"]);
     assert_eq!(tuples(&rich), tuples(&minimal));
+    assert!(implements(
+        symbol(&rich, "Widget#root()."),
+        "Root#root().",
+        true
+    ));
     assert!(
         rich.documents.iter().all(|doc| doc.position_encoding
             == PositionEncoding::UTF16CodeUnitOffsetFromLineStart.into())
@@ -203,4 +208,84 @@ fn preserves_existing_output_when_indexing_fails() {
         fs::read_to_string(directory.path().join("client.ts")).unwrap(),
         CLIENT
     );
+}
+
+#[test]
+fn solution_root_follows_references_once_and_resolves_cross_project_symbols() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path();
+    fs::create_dir(path.join("lib")).unwrap();
+    fs::create_dir(path.join("app")).unwrap();
+    fs::write(
+        path.join("package.json"),
+        r#"{"name":"solution-test","version":"1.0.0"}"#,
+    )
+    .unwrap();
+    fs::write(path.join("tsconfig.json"), r#"{"files":[],"references":[{"path":"./lib"},{"path":"./app"},{"path":"./lib/tsconfig.json"}]}"#).unwrap();
+    fs::write(
+        path.join("lib/tsconfig.json"),
+        r#"{"compilerOptions":{"composite":true,"types":[]},"files":["api.ts"]}"#,
+    )
+    .unwrap();
+    fs::write(
+        path.join("lib/api.ts"),
+        "export interface Contract { run(): number }\nexport function compute() { return 42; }\n",
+    )
+    .unwrap();
+    fs::write(path.join("app/tsconfig.json"), r#"{"compilerOptions":{"composite":true,"types":[]},"files":["client.ts"],"references":[{"path":"../lib"}]}"#).unwrap();
+    fs::write(path.join("app/client.ts"), "import { Contract, compute } from '../lib/api';\nexport class Service implements Contract { run() { return compute(); } }\n").unwrap();
+    let index = generate(path, "index.scip", &[]);
+    let mut files: Vec<_> = index
+        .documents
+        .iter()
+        .map(|d| d.relative_path.as_str())
+        .collect();
+    files.sort();
+    assert_eq!(files, ["app/client.ts", "lib/api.ts"]);
+    let function = symbol(&index, "compute().");
+    assert!(
+        index
+            .documents
+            .iter()
+            .find(|d| d.relative_path == "app/client.ts")
+            .unwrap()
+            .occurrences
+            .iter()
+            .any(|o| o.symbol == function.symbol && o.symbol_roles == 0)
+    );
+    assert!(implements(symbol(&index, "Service#"), "Contract#", false));
+    assert!(
+        !index
+            .external_symbols
+            .iter()
+            .any(|s| s.symbol == function.symbol)
+    );
+    assert!(!path.join("lib/api.d.ts").exists());
+    assert!(!path.join("app/client.js").exists());
+    fs::write(path.join("index.scip"), "previous output").unwrap();
+    fs::write(
+        path.join("app/tsconfig.json"),
+        r#"{"files":[],"references":[{"path":"../missing"}]}"#,
+    )
+    .unwrap();
+    assert!(!run(path, &["index"]).status.success());
+    assert_eq!(
+        fs::read_to_string(path.join("index.scip")).unwrap(),
+        "previous output"
+    );
+}
+
+#[test]
+fn infers_config_in_memory_for_typescript_and_javascript() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path();
+    fs::write(
+        path.join("main.ts"),
+        "export function example() { return 1; }\n",
+    )
+    .unwrap();
+    fs::write(path.join("other.js"), "export const value = 2;\n").unwrap();
+    let index = generate(path, "index.scip", &["--infer-tsconfig"]);
+    assert_eq!(index.documents.len(), 2);
+    assert!(!path.join("tsconfig.json").exists());
 }

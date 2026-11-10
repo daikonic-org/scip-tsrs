@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::io::{BufWriter, Write};
 use std::path::Path;
@@ -19,7 +19,7 @@ use tsrs_scanner::{get_text_of_node, get_token_pos_of_node};
 
 use crate::metadata::{self, FileMetadata, IndexMetadata};
 use crate::scip_io::{Range, encode_enclosing_range, encode_range};
-use crate::{Project, declarations, node_range, source_range, visit};
+use crate::{Project, ProjectInput, declarations, node_range, source_range, visit};
 
 const DEFINITION: i32 = SymbolRole::Definition as i32;
 const ANONYMOUS_PACKAGE: &str = "scip-typescript npm . . ";
@@ -30,13 +30,14 @@ pub(super) struct Options {
 }
 
 pub(super) fn write_index(
-    project: &Project,
-    checker: &mut Checker,
+    input: &ProjectInput,
+    configurations: &[std::path::PathBuf],
+    root: &Path,
     destination: &Path,
     options: Options,
 ) -> Result<()> {
-    let project_root = url::Url::from_directory_path(&project.root)
-        .map_err(|_| anyhow::anyhow!("invalid SCIP root {}", project.root.display()))?;
+    let project_root = url::Url::from_directory_path(root)
+        .map_err(|_| anyhow::anyhow!("invalid SCIP root {}", root.display()))?;
     let output_parent = destination
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
@@ -45,13 +46,8 @@ pub(super) fn write_index(
         .canonicalize()?
         .join(destination.file_name().context("output has no file name")?);
     ensure!(
-        output_path != project.config
-            && !project
-                .program
-                .source_files()
-                .iter()
-                .any(|file| { Path::new(file.file_name()) == output_path }),
-        "output would overwrite a project input"
+        !configurations.contains(&output_path),
+        "output would overwrite a project config"
     );
     let mut pending = NamedTempFile::new_in(output_parent)?;
     let mut output = BufWriter::new(pending.as_file_mut());
@@ -70,71 +66,104 @@ pub(super) fn write_index(
     }
     .write_to_writer(&mut output)?;
 
-    let mut names = Names {
-        root: &project.root,
-        paths: HashMap::new(),
-        global: HashMap::new(),
-    };
-    let mut metadata = (!options.minimal).then(IndexMetadata::default);
+    let ctx = tsrs_compiler::Context::background();
     let mut documents = 0;
-    for &file in &project.files {
-        let first = get_token_pos_of_node(file.as_node(), file, false) as usize;
-        if options.max_file_byte_size != 0 && file.text().len() - first > options.max_file_byte_size
-        {
-            eprintln!(
-                "skipping {} above the {} byte output limit",
-                file.file_name(),
-                options.max_file_byte_size
-            );
-            continue;
-        }
-        let relative_path = Path::new(file.file_name())
-            .strip_prefix(&project.root)?
-            .to_str()
-            .context("file path is not UTF-8")?
-            .to_owned();
-        let document = Document {
-            language: match Path::new(&relative_path)
-                .extension()
-                .and_then(|ext| ext.to_str())
-            {
-                Some("tsx") => "TypeScriptReact",
-                Some("jsx") => "JavaScriptReact",
-                Some("js" | "cjs" | "mjs") => "JavaScript",
-                _ => "TypeScript",
+    let mut seen_files = HashSet::new();
+    let mut defined = HashSet::new();
+    let mut external = BTreeMap::new();
+    for config in configurations {
+        let project = Project::load_config(input, config, Some(root))?;
+        ensure!(
+            !project
+                .program
+                .source_files()
+                .iter()
+                .any(|file| Path::new(file.file_name()) == output_path),
+            "output would overwrite a project input"
+        );
+        let mut checker = project.program.get_type_checker(&ctx);
+        let mut names = Names {
+            root,
+            paths: HashMap::new(),
+            global: HashMap::new(),
+        };
+        let mut metadata = (!options.minimal).then(IndexMetadata::default);
+        for &file in &project.files {
+            if !seen_files.insert(file.file_name().to_owned()) {
+                continue;
             }
-            .into(),
-            relative_path,
-            position_encoding: PositionEncoding::UTF16CodeUnitOffsetFromLineStart.into(),
-            ..Document::default()
-        };
-        let indexer = FileIndexer {
-            names: &mut names,
-            checker,
-            file,
-            document,
-            locals: HashMap::new(),
-            property_counters: HashMap::new(),
-            local_counter: 0,
-            metadata: metadata.as_mut().map(FileMetadata::new),
-        };
-        let document = indexer.run();
-        documents += 1;
-        // Concatenating protobuf Index fragments appends their repeated Document fields.
-        Index {
-            documents: vec![document],
-            ..Index::default()
+            let first = get_token_pos_of_node(file.as_node(), file, false) as usize;
+            if options.max_file_byte_size != 0
+                && file.text().len() - first > options.max_file_byte_size
+            {
+                eprintln!(
+                    "skipping {} above the {} byte output limit",
+                    file.file_name(),
+                    options.max_file_byte_size
+                );
+                continue;
+            }
+            let relative_path = Path::new(file.file_name())
+                .strip_prefix(&project.root)?
+                .to_str()
+                .context("file path is not UTF-8")?
+                .to_owned();
+            let document = Document {
+                language: match Path::new(&relative_path)
+                    .extension()
+                    .and_then(|ext| ext.to_str())
+                {
+                    Some("tsx") => "TypeScriptReact",
+                    Some("jsx") => "JavaScriptReact",
+                    Some("js" | "cjs" | "mjs") => "JavaScript",
+                    _ => "TypeScript",
+                }
+                .into(),
+                relative_path,
+                position_encoding: PositionEncoding::UTF16CodeUnitOffsetFromLineStart.into(),
+                ..Document::default()
+            };
+            let indexer = FileIndexer {
+                names: &mut names,
+                checker: &mut checker,
+                file,
+                document,
+                locals: HashMap::new(),
+                property_counters: HashMap::new(),
+                local_counter: 0,
+                metadata: metadata.as_mut().map(FileMetadata::new),
+            };
+            let document = indexer.run();
+            for info in &document.symbols {
+                if !info.symbol.starts_with("local ") {
+                    defined.insert(info.symbol.clone());
+                    external.remove(&info.symbol);
+                }
+            }
+            documents += 1;
+            // Concatenating protobuf Index fragments appends their repeated Document fields.
+            Index {
+                documents: vec![document],
+                ..Index::default()
+            }
+            .write_to_writer(&mut output)?;
         }
-        .write_to_writer(&mut output)?;
+        if let Some(metadata) = metadata {
+            for info in metadata.into_external_symbols() {
+                if !defined.contains(&info.symbol) {
+                    external.entry(info.symbol.clone()).or_insert(info);
+                }
+            }
+        }
+        // The checker and pointer-keyed caches end before Project frees its
+        // compiler regions. Only owned protobuf data survives this iteration.
     }
     ensure!(documents > 0, "no documents passed the file-size limit");
-    if let Some(metadata) = metadata {
-        Index {
-            external_symbols: metadata.into_external_symbols(),
-            ..Index::default()
-        }
-        .write_to_writer(&mut output)?;
+    Index {
+        external_symbols: external.into_values().collect(),
+        ..Index::default()
     }
+    .write_to_writer(&mut output)?;
     output.flush()?;
     drop(output);
     pending.persist(destination)?;
@@ -287,8 +316,27 @@ impl FileIndexer<'_, '_> {
             } else {
                 decl
             };
-            if let (Some(metadata), Some(owner)) = (&mut self.metadata, heritage) {
-                metadata.record_base(owner, &name, decl);
+            if let Some(owner) = heritage.filter(|_| !name.starts_with("local ")) {
+                // The checker includes inherited members of this base, so an
+                // implementation of I extends Root links to Root's declaration
+                // rather than inventing a member on I.
+                let ty = self.checker.get_declared_type_of_symbol_exported(symbol);
+                let members: Vec<_> = self
+                    .checker
+                    .get_properties_of_type_exported(ty)
+                    .iter()
+                    .flat_map(|symbol| symbol.declarations())
+                    .copied()
+                    .filter(|&member| metadata::instance_member(member).is_some())
+                    .collect();
+                let members = members
+                    .into_iter()
+                    .map(|member| (self.name(member), member))
+                    .filter(|(name, _)| !name.is_empty() && !name.starts_with("local "))
+                    .collect();
+                if let Some(metadata) = &mut self.metadata {
+                    metadata.record_base(owner, &name, decl, members);
+                }
             }
             self.emit(
                 name,

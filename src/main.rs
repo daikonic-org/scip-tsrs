@@ -1,124 +1,19 @@
 mod index;
 mod metadata;
+mod project;
 mod scip_io;
 
-use std::collections::HashSet;
 use std::io::{self, BufWriter, Write};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
 use anyhow::{Context as _, Result, bail};
 use clap::{Args, Parser, Subcommand};
+use project::Project;
 use serde_json::json;
 use tsrs_ast::{self as ast, Diagnostic, Kind, Node, SourceFile, Symbol};
-use tsrs_compiler::{
-    Checker, Context, Program, ProgramOptions, new_cached_fs_compiler_host, new_program,
-};
+use tsrs_compiler::{Checker, Context};
 use tsrs_core::P;
 use tsrs_scanner::{get_ecma_line_and_utf16_character_of_position, get_token_pos_of_node};
-use tsrs_tsoptions::{ParseConfigHost, get_parsed_command_line_of_config_file};
-use tsrs_vfs::{FS, bundled, osvfs};
-
-struct ConfigHost<'a> {
-    fs: &'a dyn FS,
-    root: &'a str,
-}
-
-impl ParseConfigHost for ConfigHost<'_> {
-    fn fs(&self) -> &dyn FS {
-        self.fs
-    }
-
-    fn get_current_directory(&self) -> &str {
-        self.root
-    }
-}
-
-struct Project {
-    root: PathBuf,
-    config: PathBuf,
-    program: &'static Program,
-    files: Vec<P<SourceFile>>,
-}
-
-impl Project {
-    fn load(input: &ProjectInput, project_root: Option<&Path>) -> Result<Self> {
-        let config = if input.project.is_dir() {
-            input.project.join("tsconfig.json")
-        } else {
-            input.project.clone()
-        };
-        let config = config
-            .canonicalize()
-            .with_context(|| format!("reading {}", config.display()))?;
-        let config_directory = config.parent().context("tsconfig has no parent")?;
-        let root = project_root
-            .map(Path::canonicalize)
-            .transpose()?
-            .unwrap_or_else(|| config_directory.to_owned());
-        let root_text = config_directory
-            .to_str()
-            .context("project path is not UTF-8")?;
-        let library = input.lib.as_deref().map(Path::canonicalize).transpose()?;
-        let library = library
-            .as_deref()
-            .map(|path| path.to_str().context("library path is not UTF-8"))
-            .transpose()?;
-        let bundled_lib = bundled::lib_path();
-        let fs = Arc::new(bundled::wrap_fs(osvfs::fs()));
-        let config_host = ConfigHost {
-            fs: &*fs,
-            root: root_text,
-        };
-        let (parsed, read_errors) = get_parsed_command_line_of_config_file(
-            config.to_str().context("config path is not UTF-8")?,
-            None,
-            None,
-            &config_host,
-            None,
-        );
-        print_diagnostics("config read", &read_errors);
-        let parsed = parsed.context("tsrs could not read the config")?;
-        print_diagnostics("config", &parsed.errors);
-        if !parsed.errors.is_empty() {
-            bail!("tsrs reported configuration errors");
-        }
-        let roots: HashSet<_> = parsed.file_names().iter().cloned().collect();
-        let host = new_cached_fs_compiler_host(
-            root_text,
-            fs,
-            library.unwrap_or(&bundled_lib),
-            None,
-            None,
-            None,
-        );
-        let program = new_program(ProgramOptions::new(P::new(parsed), host));
-        let files: Vec<_> = program
-            .source_files()
-            .iter()
-            .copied()
-            .filter(|file| roots.contains(file.file_name()))
-            .collect();
-        if files.len() != roots.len() || files.is_empty() {
-            bail!(
-                "tsconfig specified {} roots, but tsrs loaded {}",
-                roots.len(),
-                files.len()
-            );
-        }
-        eprintln!(
-            "loaded {} roots, {} files total",
-            files.len(),
-            program.source_files().len()
-        );
-        Ok(Self {
-            root,
-            config,
-            program,
-            files,
-        })
-    }
-}
 
 fn print_diagnostics(phase: &str, diagnostics: &[P<Diagnostic>]) {
     for diagnostic in diagnostics {
@@ -228,6 +123,9 @@ enum Command {
         /// Root for document paths. Defaults to the tsconfig directory.
         #[arg(long)]
         project_root: Option<PathBuf>,
+        /// Index only this config, without following its project references.
+        #[arg(long)]
+        no_project_references: bool,
         /// Emit occurrences and bare symbols only.
         #[arg(long)]
         minimal: bool,
@@ -257,6 +155,9 @@ struct ProjectInput {
     /// A directory containing tsconfig.json, or the path to a config file.
     #[arg(default_value = ".")]
     project: PathBuf,
+    /// Infer a config in memory if the project directory has no tsconfig.json.
+    #[arg(long)]
+    infer_tsconfig: bool,
     /// Override the compiler's bundled TypeScript library directory.
     #[arg(long)]
     lib: Option<PathBuf>,
@@ -305,12 +206,18 @@ fn main() -> Result<()> {
             output,
             project_root,
             minimal,
+            no_project_references,
             max_file_byte_size,
         } => {
-            let project = Project::load(&input, project_root.as_deref())?;
+            let configurations = project::configurations(&input, !no_project_references)?;
+            let config = project::config_path(&input)?;
+            let root = project_root
+                .unwrap_or_else(|| config.parent().unwrap().to_owned())
+                .canonicalize()?;
             index::write_index(
-                &project,
-                &mut project.program.get_type_checker(&ctx),
+                &input,
+                &configurations,
+                &root,
                 &output,
                 index::Options {
                     minimal,
