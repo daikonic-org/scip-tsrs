@@ -45,4 +45,4 @@ cargo fmt --check
 cargo test --release --locked
 ```
 
-The tsrs revision and Rust dependencies are pinned by the manifest and lockfile. Binary releases are built and tested on macOS and Linux, on ARM64 and x86-64 runners. The repository is licensed under Apache-2.0. See `NOTICE` and `NOTICE-tsrs` for attribution.
+The tsrs revision and Rust dependencies are pinned by the manifest and lockfile. Binary releases are built and tested on Apple silicon macOS, Linux ARM64, and Linux x86-64. The repository is licensed under Apache-2.0. See `NOTICE` and `NOTICE-tsrs` for attribution.
