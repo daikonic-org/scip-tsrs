@@ -9,7 +9,7 @@ Download the archive for your platform from [GitHub Releases](https://github.com
 To build from source with Rust 1.99 or newer:
 
 ```sh
-cargo install --git https://github.com/daikonic-org/scip-tsrs --tag v0.2.0 --locked
+cargo install --git https://github.com/daikonic-org/scip-tsrs --tag v0.2.1 --locked
 ```
 
 Run the indexer with a project directory or a path to its TypeScript config. Without a project argument, it uses the current directory.
