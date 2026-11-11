@@ -282,9 +282,58 @@ fn documentation(decl: P<Node>, file: P<SourceFile>) -> Vec<String> {
         .jsdoc(Some(file.get()))
         .iter()
         .filter(|doc| doc.kind() == Kind::JSDoc)
-        .map(|doc| get_text_of_jsdoc_comment(Some(doc.as_jsdoc().comment())))
+        .map(|doc| {
+            let jsdoc = doc.as_jsdoc();
+            let mut sections = vec![get_text_of_jsdoc_comment(Some(jsdoc.comment()))];
+            if let Some(tags) = jsdoc.tags() {
+                for tag in tags.nodes() {
+                    let Some(start) = tag.pos().source_offset() else {
+                        continue;
+                    };
+                    let Some(end) = tag.end().source_offset() else {
+                        continue;
+                    };
+                    let Some(text) = file.text().get(start as usize..end as usize) else {
+                        continue;
+                    };
+                    sections.push(render_jsdoc_tag(text));
+                }
+            }
+            sections
+                .into_iter()
+                .filter(|text| !text.is_empty())
+                .collect::<Vec<_>>()
+                .join("\n\n")
+        })
         .filter(|text| !text.is_empty())
         .collect()
+}
+
+/// Keep the compiler's tag boundaries and source content, including custom
+/// tags, while removing only the comment margin. Examples retain indentation.
+fn render_jsdoc_tag(text: &str) -> String {
+    let text = text
+        .lines()
+        .map(|line| {
+            let margin = line.trim_start_matches([' ', '\t']);
+            margin
+                .strip_prefix('*')
+                .map(|line| line.strip_prefix(' ').unwrap_or(line))
+                .unwrap_or(line)
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let text = text.trim();
+    let split = text.find(char::is_whitespace).unwrap_or(text.len());
+    let (name, rest) = text.split_at(split);
+    let rest = rest
+        .strip_prefix('\n')
+        .unwrap_or_else(|| rest.trim_start_matches([' ', '\t']));
+    if rest.is_empty() {
+        format!("**{name}**")
+    } else {
+        format!("**{name}**\n\n{rest}")
+    }
 }
 
 fn signature(decl: P<Node>, file: P<SourceFile>) -> Option<String> {

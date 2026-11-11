@@ -211,6 +211,70 @@ fn preserves_existing_output_when_indexing_fails() {
 }
 
 #[test]
+fn preserves_jsdoc_tags_examples_and_tag_only_comments_in_javascript() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path();
+    fs::write(
+        path.join("package.json"),
+        r#"{"name":"jsdoc-test","version":"1.0.0","type":"module"}"#,
+    )
+    .unwrap();
+    fs::write(
+        path.join("tsconfig.json"),
+        r#"{"compilerOptions":{"allowJs":true,"checkJs":true,"types":[]},"files":["api.js"]}"#,
+    )
+    .unwrap();
+    fs::write(
+        path.join("api.js"),
+        r#"const prefix = 'é😀';
+/** Returns its argument.
+ * @template T
+ * @param {T} value - The value, including é😀.
+ *   Continued parameter documentation.
+ * @returns {T} The original value.
+ * @throws {Error} If invalid.
+ * @deprecated Use identity instead.
+ * @example
+ * ```js
+ * echo('é😀');
+ * ```
+ * @example
+ *     echo('indented');
+ * @customNote Custom documentation survives.
+ */
+export function echo(value) { return value; }
+/** @type {number} */
+export const total = 1;
+"#,
+    )
+    .unwrap();
+    let rich = generate(path, "rich.scip", &[]);
+    let minimal = generate(path, "minimal.scip", &["--minimal"]);
+    assert_eq!(tuples(&rich), tuples(&minimal));
+    let documentation = symbol(&rich, "echo().").documentation.join("\n\n");
+    for expected in [
+        "Returns its argument.",
+        "**@template**\n\nT",
+        "**@param**\n\n{T} value - The value, including é😀.\n  Continued parameter documentation.",
+        "**@returns**\n\n{T} The original value.",
+        "**@throws**\n\n{Error} If invalid.",
+        "**@deprecated**\n\nUse identity instead.",
+        "**@example**\n\n```js\necho('é😀');\n```",
+        "**@example**\n\n    echo('indented');",
+        "**@customNote**\n\nCustom documentation survives.",
+    ] {
+        assert!(
+            documentation.contains(expected),
+            "missing {expected:?} in {documentation:?}"
+        );
+    }
+    assert_eq!(
+        symbol(&rich, "total.").documentation,
+        ["**@type**\n\n{number}"]
+    );
+}
+
+#[test]
 fn solution_root_follows_references_once_and_resolves_cross_project_symbols() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path();

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Preserve JSDoc tags in standard SCIP documentation, including parameter and return descriptions, templates, deprecation, examples, and custom tags.
+- Keep fenced and indented examples, Unicode text, and comments containing only tags. Add a checked JavaScript fixture and verify occurrence tuples remain unchanged.
+
 ## 0.2.0
 
 - Follow TypeScript project references automatically, including empty solution configs and repeated references. Emit one index with unique documents and cross-project symbol identities.
