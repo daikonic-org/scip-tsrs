@@ -32,12 +32,18 @@ These additions were checked against 0.4.0 output on the benchmark package. Proj
 
 ## Install and use
 
-Download the archive for your platform from [GitHub Releases](https://github.com/daikonic-org/scip-tsrs/releases/tag/v0.2.1). Extract it and put `scip-tsrs` on your `PATH`. Releases include SHA-256 checksums. Supported binaries cover Apple silicon macOS, Linux ARM64, and Linux x86-64.
-
-To build from source with Rust 1.99 or newer:
+With Rust 1.99 or newer, install the alpha from [crates.io](https://crates.io/crates/scip-tsrs/0.2.2-alpha.1):
 
 ```sh
-cargo install --git https://github.com/daikonic-org/scip-tsrs --tag v0.2.1 --locked
+cargo install scip-tsrs --version 0.2.2-alpha.1 --locked
+```
+
+Download a prebuilt archive from [GitHub Releases](https://github.com/daikonic-org/scip-tsrs/releases/tag/v0.2.2-alpha.1) to install without a Rust toolchain. Extract it and put `scip-tsrs` on your `PATH`. Releases include SHA-256 checksums. Supported binaries cover Apple silicon macOS, Linux ARM64, and Linux x86-64.
+
+To build the same release from its Git tag:
+
+```sh
+cargo install --git https://github.com/daikonic-org/scip-tsrs --tag v0.2.2-alpha.1 --locked
 ```
 
 Run the indexer with a project directory or a path to its TypeScript config. Without a project argument, it uses the current directory.

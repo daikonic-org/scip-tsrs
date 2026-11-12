@@ -2,6 +2,8 @@
 
 The [Build and release workflow](../.github/workflows/build.yml) tests Apple silicon macOS, Linux ARM64, and Linux x86-64. A version tag must match `Cargo.toml`, including an alpha suffix. GitHub binary archives and crates.io source publication both depend on the complete test matrix.
 
+The first registry release is [scip-tsrs 0.2.2-alpha.1](https://crates.io/crates/scip-tsrs/0.2.2-alpha.1), also available as [GitHub binaries](https://github.com/daikonic-org/scip-tsrs/releases/tag/v0.2.2-alpha.1). Install it with `cargo install scip-tsrs --version 0.2.2-alpha.1 --locked`.
+
 ## Package verification
 
 Linux x86-64 CI creates the actual `.crate` archive, unpacks it, and runs its tests in release mode against registry dependencies. This checks the normalized manifest and the sources a crates.io installation will use. macOS and Linux ARM64 run the release suite from the checkout.
