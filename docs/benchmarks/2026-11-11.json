@@ -1,0 +1,370 @@
+{
+  "captured_date_utc": "2026-11-11",
+  "producers": {
+    "scip-typescript": {
+      "version": "0.4.0",
+      "typescript_version": "5.9.3"
+    },
+    "scip-tsrs": {
+      "version": "0.2.1",
+      "source_commit": "0b054fd41b2e4a96b017db7fccc491eaaeaa10e2",
+      "tsrs_commit": "86de03ae428a956686af29177b50f0fdf4aee059",
+      "bundled_typescript_library": "7.1",
+      "metadata_mode": "default"
+    }
+  },
+  "workload": {
+    "name": "@sittir/typescript",
+    "input_sha256": "0e26a9c7dc9e8ea8cf8456a2ae29cafce08da950bfdf3b8e5ae7d9006022fa6f",
+    "root_files": 135,
+    "program_source_files": 1175,
+    "captured_read_inputs": 1236,
+    "emitted_documents_per_producer": 132,
+    "project_references": 0
+  },
+  "host": {
+    "os": "macOS",
+    "architecture": "arm64",
+    "cores": 14,
+    "memory_gib": 48,
+    "filesystem_caches": "warm",
+    "heavily_loaded": true
+  },
+  "measurement": {
+    "tool": "/usr/bin/time -l",
+    "fresh_process_per_sample": true,
+    "pairs": 3,
+    "pair_order": [
+      [
+        "stock-1",
+        "native-1"
+      ],
+      [
+        "native-2",
+        "stock-2"
+      ],
+      [
+        "stock-3",
+        "native-3"
+      ]
+    ],
+    "cpu_seconds": "user_seconds + system_seconds",
+    "scope": "producer only; excludes build, consumer import, embeddings and persistent services"
+  },
+  "samples": [
+    {
+      "label": "stock-1",
+      "exit_code": 0,
+      "load_start": [
+        169.7685546875,
+        196.41162109375,
+        159.107421875
+      ],
+      "load_end": [
+        212.4404296875,
+        203.96923828125,
+        163.123046875
+      ],
+      "inputs_unchanged": true,
+      "wall_seconds": 32.13,
+      "user_seconds": 35.88,
+      "system_seconds": 1.72,
+      "peak_rss_mib": 2328.9375,
+      "swaps": 0
+    },
+    {
+      "label": "native-1",
+      "exit_code": 0,
+      "load_start": [
+        212.4404296875,
+        203.96923828125,
+        163.123046875
+      ],
+      "load_end": [
+        222.33447265625,
+        206.1611328125,
+        164.1357421875
+      ],
+      "inputs_unchanged": true,
+      "wall_seconds": 1.77,
+      "user_seconds": 1.53,
+      "system_seconds": 0.19,
+      "peak_rss_mib": 342.828125,
+      "swaps": 0
+    },
+    {
+      "label": "native-2",
+      "exit_code": 0,
+      "load_start": [
+        222.33447265625,
+        206.1611328125,
+        164.1357421875
+      ],
+      "load_end": [
+        222.33447265625,
+        206.1611328125,
+        164.1357421875
+      ],
+      "inputs_unchanged": true,
+      "wall_seconds": 1.95,
+      "user_seconds": 1.54,
+      "system_seconds": 0.18,
+      "peak_rss_mib": 345.53125,
+      "swaps": 0
+    },
+    {
+      "label": "stock-2",
+      "exit_code": 0,
+      "load_start": [
+        222.33447265625,
+        206.1611328125,
+        164.1357421875
+      ],
+      "load_end": [
+        263.84228515625,
+        217.56591796875,
+        169.71337890625
+      ],
+      "inputs_unchanged": true,
+      "wall_seconds": 30.78,
+      "user_seconds": 34.51,
+      "system_seconds": 1.8,
+      "peak_rss_mib": 2386.40625,
+      "swaps": 0
+    },
+    {
+      "label": "stock-3",
+      "exit_code": 0,
+      "load_start": [
+        263.84228515625,
+        217.56591796875,
+        169.71337890625
+      ],
+      "load_end": [
+        316.6728515625,
+        234.94287109375,
+        177.67529296875
+      ],
+      "inputs_unchanged": true,
+      "wall_seconds": 29.07,
+      "user_seconds": 31.99,
+      "system_seconds": 1.72,
+      "peak_rss_mib": 1642.109375,
+      "swaps": 0
+    },
+    {
+      "label": "native-3",
+      "exit_code": 0,
+      "load_start": [
+        316.6728515625,
+        234.94287109375,
+        177.67529296875
+      ],
+      "load_end": [
+        316.6728515625,
+        234.94287109375,
+        177.67529296875
+      ],
+      "inputs_unchanged": true,
+      "wall_seconds": 1.49,
+      "user_seconds": 1.36,
+      "system_seconds": 0.2,
+      "peak_rss_mib": 342.546875,
+      "swaps": 0
+    }
+  ],
+  "shared_library_control": {
+    "label": "native-common-library",
+    "exit_code": 0,
+    "load_start": [
+      316.6728515625,
+      234.94287109375,
+      177.67529296875
+    ],
+    "load_end": [
+      316.93896484375,
+      236.3544921875,
+      178.5087890625
+    ],
+    "inputs_unchanged": true,
+    "wall_seconds": 1.91,
+    "user_seconds": 1.37,
+    "system_seconds": 0.18,
+    "peak_rss_mib": 338.90625,
+    "swaps": 0
+  },
+  "index_size_bytes": {
+    "stock": 31123605,
+    "native": 37719802
+  },
+  "occurrence_comparison": {
+    "shared_libraries": {
+      "documents": {
+        "oracle": 132,
+        "native": 132,
+        "oracleOnly": [],
+        "nativeOnly": []
+      },
+      "all": {
+        "oracle": 250990,
+        "native": 250841,
+        "exact": 250371,
+        "oracleOnly": 619,
+        "nativeOnly": 470,
+        "recall": 99.753,
+        "precision": 99.813,
+        "jaccard": 99.567
+      },
+      "global": {
+        "oracle": 219820,
+        "native": 219668,
+        "exact": 219666,
+        "oracleOnly": 154,
+        "nativeOnly": 2,
+        "recall": 99.93,
+        "precision": 99.999,
+        "jaccard": 99.929
+      },
+      "local": {
+        "oracle": 31170,
+        "native": 31173,
+        "exact": 30705,
+        "oracleOnly": 465,
+        "nativeOnly": 468,
+        "recall": 98.508,
+        "precision": 98.499,
+        "jaccard": 97.051
+      },
+      "definitions": {
+        "oracle": 57295,
+        "native": 57295,
+        "exact": 57252,
+        "oracleOnly": 43,
+        "nativeOnly": 43,
+        "recall": 99.925,
+        "precision": 99.925,
+        "jaccard": 99.85
+      }
+    },
+    "bundled_libraries": {
+      "documents": {
+        "oracle": 132,
+        "native": 132,
+        "oracleOnly": [],
+        "nativeOnly": []
+      },
+      "all": {
+        "oracle": 250990,
+        "native": 251018,
+        "exact": 241133,
+        "oracleOnly": 9857,
+        "nativeOnly": 9885,
+        "recall": 96.073,
+        "precision": 96.062,
+        "jaccard": 92.432
+      },
+      "global": {
+        "oracle": 219820,
+        "native": 219845,
+        "exact": 210428,
+        "oracleOnly": 9392,
+        "nativeOnly": 9417,
+        "recall": 95.727,
+        "precision": 95.717,
+        "jaccard": 91.795
+      },
+      "local": {
+        "oracle": 31170,
+        "native": 31173,
+        "exact": 30705,
+        "oracleOnly": 465,
+        "nativeOnly": 468,
+        "recall": 98.508,
+        "precision": 98.499,
+        "jaccard": 97.051
+      },
+      "definitions": {
+        "oracle": 57295,
+        "native": 57295,
+        "exact": 57252,
+        "oracleOnly": 43,
+        "nativeOnly": 43,
+        "recall": 99.925,
+        "precision": 99.925,
+        "jaccard": 99.85
+      }
+    }
+  },
+  "unmatched_causes": {
+    "shared_libraries": {
+      "Legacy standard-library files skipped by TS7 lib mapping": {
+        "oracle": 152
+      },
+      "Local ordinals assigned in a different union-declaration order": {
+        "oracle": 357,
+        "native": 357
+      },
+      "Local ordinals shifted by an earlier index-signature reference": {
+        "oracle": 108,
+        "native": 108
+      },
+      "TS7 returns an index-signature declaration for process.env": {
+        "native": 3
+      },
+      "Type-literal ordinal shifted by shared counter and union order": {
+        "oracle": 2,
+        "native": 2
+      }
+    },
+    "bundled_libraries": {
+      "Additional declarations in bundled TS7 standard library": {
+        "native": 25
+      },
+      "Local ordinals assigned in a different union-declaration order": {
+        "native": 357,
+        "oracle": 357
+      },
+      "Local ordinals shifted by an earlier index-signature reference": {
+        "native": 108,
+        "oracle": 108
+      },
+      "Standard-library declarations moved from ESNext to ES2025": {
+        "native": 152,
+        "oracle": 152
+      },
+      "TS7 returns an index-signature declaration for process.env": {
+        "native": 3
+      },
+      "Type-literal ordinal shifted by shared counter and union order": {
+        "native": 2,
+        "oracle": 2
+      },
+      "TypeScript package version in standard-library symbols": {
+        "native": 9238,
+        "oracle": 9238
+      }
+    }
+  },
+  "metadata_counts": {
+    "stock": {
+      "explicit_kinds": 0,
+      "structured_signatures": 0,
+      "named_locals": 0,
+      "external_symbols": 0,
+      "implementation_relationships": 0
+    },
+    "native": {
+      "explicit_kinds": 56356,
+      "structured_signatures": 56156,
+      "named_locals": 9731,
+      "external_symbols": 3941,
+      "implementation_relationships": 1566
+    }
+  },
+  "known_semantic_differences": {
+    "read_write_access_flags_emitted": false,
+    "inherited_prose_symbols_missing_from_native": 239,
+    "missing_inherited_property_prose": 238,
+    "missing_inherited_method_prose": 1
+  }
+}

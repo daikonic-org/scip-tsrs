@@ -1,10 +1,38 @@
 # scip-tsrs
 
-`scip-tsrs` is a native TypeScript indexer. It loads a `tsconfig.json` with the in-process [tsrs checker](https://github.com/oxc-project/tsrs) and writes a [SCIP](https://github.com/scip-code/scip) index. The executable bundles its TypeScript standard library and runs without a Node process.
+> **Alpha.** The CLI, checker compatibility, and index coverage are still moving.
+> Pin exact versions and validate the output on your projects before adopting it
+> at scale. See [current limitations](docs/scip.md#current-limitations).
+
+`scip-tsrs` is a native TypeScript and JavaScript [SCIP](https://github.com/scip-code/scip) indexer written in Rust. It loads your `tsconfig.json` with the in-process [tsrs checker](https://github.com/oxc-project/tsrs) and emits definitions, references, documentation, and implementation relationships. The executable bundles its TypeScript standard library and runs without Node.js.
+
+## Performance
+
+On `@sittir/typescript`, comparing scip-typescript **0.4.0** with scip-tsrs **0.2.1**, using normal metadata-enabled output:
+
+| Metric | scip-typescript | scip-tsrs | Difference |
+| --- | ---: | ---: | --- |
+| Wall time | 30.78 s | 1.77 s | **17.4× faster** |
+| CPU time | 36.31 s | 1.72 s | **21.1× less CPU time** |
+| Peak memory (RSS) | 2,329 MiB | 343 MiB | **85.3% lower** |
+| SCIP file size | 29.68 MiB | 35.97 MiB | 21.2% larger |
+
+Timings and memory are medians of three fresh-process runs on a busy ARM64 macOS host with warm filesystem caches. These measure the indexer process; consumer import, embeddings, and long-running daemon memory are separate costs. See the [methodology, raw samples, and occurrence comparison](docs/benchmarks.md).
+
+## Beyond scip-typescript 0.4.0
+
+- **Explicit symbol kinds.** Classes, interfaces, methods, properties, variables, parameters, and other declarations have typed SCIP metadata, so consumers can distinguish them without guessing from symbol spelling.
+- **Structured signatures and containment.** Source signatures use `signature_documentation`; enclosing symbols and occurrence ranges describe where declarations belong.
+- **Implementation and override links.** Direct class and interface heritage, plus matching instance members, use standard SCIP relationships. Member lookup includes declarations inherited by the base interface or class.
+- **Named local-symbol metadata.** Document-scoped `local N` identities also carry display names and kinds, including shadowed variables. Local IDs remain scoped to their document.
+- **External-symbol metadata.** Referenced global symbols defined outside the emitted documents have symbol information, with kinds, signatures, and documentation where available.
+- **Standalone native distribution.** One executable with bundled standard libraries; no Node.js runtime or compiler subprocess is required.
+
+These additions were checked against 0.4.0 output on the benchmark package. Project references, definitions and references, and JSDoc are also supported; they are shared capabilities rather than new additions. See [SCIP output and compatibility](docs/scip.md) for the exact semantics and limits.
 
 ## Install and use
 
-Download the archive for your platform from [GitHub Releases](https://github.com/daikonic-org/scip-tsrs/releases). Extract it and put `scip-tsrs` on your `PATH`. Releases include SHA-256 checksums.
+Download the archive for your platform from [GitHub Releases](https://github.com/daikonic-org/scip-tsrs/releases/tag/v0.2.1). Extract it and put `scip-tsrs` on your `PATH`. Releases include SHA-256 checksums. Supported binaries cover Apple silicon macOS, Linux ARM64, and Linux x86-64.
 
 To build from source with Rust 1.99 or newer:
 
@@ -20,23 +48,20 @@ scip-tsrs scip ./tsconfig.json --project-root .
 scip-tsrs dump ./index.scip
 ```
 
-- Project references are followed automatically, including empty solution configs. Sources are never built or written; one `index.scip` contains the combined documents. `--no-project-references` restricts indexing to one config.
-- `--infer-tsconfig` supports projects without a config using an in-memory compiler configuration.
-- `--project-root` sets the base directory for SCIP document paths. The default is the config directory.
-- `--max-file-byte-size` defaults to 1,000,000 bytes. It limits emitted documents while keeping their sources available to the checker. Use `0` to emit every root file.
-- `--minimal` emits occurrence and bare symbol data for comparisons. Enrichment preserves occurrence identities, positions, and roles.
-- `--lib` selects an alternate TypeScript standard-library directory. The default is tsrs’s bundled TypeScript 7.1 library.
-- `scip-tsrs inspect PROJECT --file src/example.ts` prints checker resolution for one file. `scip-tsrs diagnose PROJECT` runs the compiler diagnostics separately.
+Project references are followed automatically, including empty solution configs, and combined into one index without building or writing project sources. JavaScript follows your compiler configuration; config-free TypeScript and JavaScript projects can use `--infer-tsconfig`. See [CLI usage](docs/usage.md) for options, monorepos, library selection, and diagnostics.
 
-## Output
+## SCIP output and coverage
 
-The index uses the SCIP 0.10 schema with typed ranges and explicit UTF-16 columns. Symbol names follow `scip-typescript` conventions, including package-qualified names, `key<N>:` object members, and document-local `local N` IDs. The same local ID can occur in different files. Consumers should key it by document as well as symbol. scip-java uses the same per-file scoping model with compiler symbols as cache keys. Checker and standard-library differences between TypeScript 7 and TypeScript 5 can still change exact tuples. [scip-java local symbol cache](https://github.com/scip-code/scip-java/blob/3793579c53edb5c0a51c69315c07faca7376dc3e/scip-shared/src/main/java/org/scip_code/scip_java/shared/LocalSymbolsCache.java)
+The index uses the standard [SCIP protobuf](https://github.com/scip-code/scip/blob/main/scip.proto), through the `scip` Rust crate 0.10.0, with typed ranges and explicit UTF-16 columns. Symbol names follow scip-typescript conventions, including package-qualified names and `key<N>:` object members. Direct JSDoc descriptions and tags use the standard documentation field.
 
-The default output includes symbol kinds, display names, source signatures, JSDoc descriptions and tags, enclosing ranges and symbols, and metadata for referenced global symbols defined outside the index. JSDoc parameters, returns, templates, deprecation, fenced and indented examples, and custom tags use the standard SCIP documentation field. The design follows the metadata structure used by [rust-analyzer](https://github.com/rust-lang/rust-analyzer/blob/2a362a41a8eb6e090f1a12d9b712df85af6f0c33/crates/rust-analyzer/src/cli/scip.rs).
+Alpha limitations include missing `ReadAccess`/`WriteAccess` occurrence flags, inherited JSDoc and link-target resolution, full override compatibility checking, complex mixins, and JSX-specific parity. TypeScript 7 checker and library differences also prevent exact scip-typescript tuple equality. [Compatibility details and known gaps](docs/scip.md#current-limitations).
 
-Class and interface relationships follow compiler-resolved direct `extends` and `implements` clauses. Both use SCIP’s `is_implementation` bit. Instance methods and properties that match a compiler-resolved base member by name and kind (including members inherited by that base) also set `is_reference`. The producer emits explicit `Class` and `Interface` kinds and retains the heritage occurrence in the source. Consumers that need to distinguish the exact keyword can read that syntax. [SCIP relationship semantics](https://github.com/scip-code/scip/blob/main/scip.proto) · [scip-java visitor](https://github.com/scip-code/scip-java/blob/3793579c53edb5c0a51c69315c07faca7376dc3e/scip-javac/src/main/java/org/scip_code/scip_java/javac/ScipVisitor.java)
+## Documentation
 
-This is a prerelease. Tests cover typed ranges, Unicode columns, local shadowing, inherited interface members, project-reference graphs, in-memory configuration, and atomic output. Full override compatibility checking, complex mixins, and JSX-specific parity remain open areas.
+- [CLI usage and project references](docs/usage.md)
+- [SCIP fields, local variables, relationships, and limitations](docs/scip.md)
+- [Benchmarks, raw samples, and occurrence compatibility](docs/benchmarks.md)
+- [Changelog](CHANGELOG.md)
 
 ## Development
 
@@ -45,4 +70,6 @@ cargo fmt --check
 cargo test --release --locked
 ```
 
-The tsrs revision and Rust dependencies are pinned by the manifest and lockfile. Binary releases are built and tested on Apple silicon macOS, Linux ARM64, and Linux x86-64. The repository is licensed under Apache-2.0. See `NOTICE` and `NOTICE-tsrs` for attribution.
+Tests cover typed ranges, Unicode columns, local shadowing, inherited interface members, project-reference graphs, in-memory configuration, JSDoc tags, and atomic output. The tsrs revision and Rust dependencies are pinned by the manifest and lockfile.
+
+The repository is licensed under Apache-2.0. See [NOTICE](NOTICE) and [NOTICE-tsrs](NOTICE-tsrs) for attribution.
