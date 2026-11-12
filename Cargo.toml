@@ -3,14 +3,15 @@ resolver = "3"
 
 [package]
 name = "scip-tsrs"
-version = "0.2.1"
+version = "0.2.2-alpha.1"
 edition = "2024"
 rust-version = "1.99"
-publish = false
+publish = ["crates-io"]
 description = "Native TypeScript SCIP indexer powered by tsrs"
 license = "Apache-2.0"
 repository = "https://github.com/daikonic-org/scip-tsrs"
 readme = "README.md"
+include = ["/src/**", "/tests/**", "/scripts/*.py", "/docs/**", "/Cargo.toml", "/Cargo.lock", "/README.md", "/CHANGELOG.md", "/LICENSE", "/NOTICE", "/NOTICE-tsrs"]
 
 [dependencies]
 anyhow = "1"
@@ -20,13 +21,13 @@ scip = "0.10.0"
 serde_json = "1"
 tempfile = "3"
 url = "2.5"
-tsrs_ast = { git = "https://github.com/oxc-project/tsrs.git", rev = "86de03ae428a956686af29177b50f0fdf4aee059" }
-tsrs_checker = { git = "https://github.com/oxc-project/tsrs.git", rev = "86de03ae428a956686af29177b50f0fdf4aee059" }
-tsrs_compiler = { git = "https://github.com/oxc-project/tsrs.git", rev = "86de03ae428a956686af29177b50f0fdf4aee059" }
-tsrs_core = { git = "https://github.com/oxc-project/tsrs.git", rev = "86de03ae428a956686af29177b50f0fdf4aee059" }
-tsrs_scanner = { git = "https://github.com/oxc-project/tsrs.git", rev = "86de03ae428a956686af29177b50f0fdf4aee059" }
-tsrs_tsoptions = { git = "https://github.com/oxc-project/tsrs.git", rev = "86de03ae428a956686af29177b50f0fdf4aee059" }
-tsrs_vfs = { git = "https://github.com/oxc-project/tsrs.git", rev = "86de03ae428a956686af29177b50f0fdf4aee059" }
+tsrs_ast = "=0.24.0"
+tsrs_checker = "=0.24.0"
+tsrs_compiler = "=0.24.0"
+tsrs_core = "=0.24.0"
+tsrs_scanner = "=0.24.0"
+tsrs_tsoptions = "=0.24.0"
+tsrs_vfs = "=0.24.0"
 
 [profile.release]
 incremental = false

@@ -61,6 +61,7 @@ Alpha limitations include missing `ReadAccess`/`WriteAccess` occurrence flags, i
 - [CLI usage and project references](docs/usage.md)
 - [SCIP fields, local variables, relationships, and limitations](docs/scip.md)
 - [Benchmarks, raw samples, and occurrence compatibility](docs/benchmarks.md)
+- [Release workflow and crates.io publishing](docs/releasing.md)
 - [Changelog](CHANGELOG.md)
 
 ## Development
@@ -70,6 +71,6 @@ cargo fmt --check
 cargo test --release --locked
 ```
 
-Tests cover typed ranges, Unicode columns, local shadowing, inherited interface members, project-reference graphs, in-memory configuration, JSDoc tags, and atomic output. The tsrs revision and Rust dependencies are pinned by the manifest and lockfile.
+Tests cover typed ranges, Unicode columns, local shadowing, inherited interface members, project-reference graphs, in-memory configuration, JSDoc tags, and atomic output. The tsrs compiler crates use exact registry versions; the lockfile pins the full dependency graph. See the [release guide](docs/releasing.md#compiler-dependencies) for provenance.
 
 The repository is licensed under Apache-2.0. See [NOTICE](NOTICE) and [NOTICE-tsrs](NOTICE-tsrs) for attribution.

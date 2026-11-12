@@ -3,10 +3,11 @@
 import argparse
 import hashlib
 import io
-import json
 from pathlib import Path
 import subprocess
 import tarfile
+
+from release import cargo_metadata, check_tag
 
 
 def dependency_notices(metadata):
@@ -36,13 +37,10 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("dist"))
     parser.add_argument("--tag", help="Require that the tag matches the Cargo package version")
     args = parser.parse_args()
-    metadata = json.loads(subprocess.check_output([
-        "cargo", "metadata", "--locked", "--format-version", "1", "--filter-platform", args.target,
-    ]))
-    package = next(pkg for pkg in metadata["packages"] if pkg["id"] == metadata["resolve"]["root"])
+    metadata, package = cargo_metadata(args.target, dependencies=True)
     version = package["version"]
-    if args.tag and args.tag != f"v{version}":
-        raise SystemExit(f"Release tag {args.tag} does not match package version {version}")
+    if args.tag:
+        check_tag(args.tag, version)
     version_output = subprocess.check_output([str(args.binary.resolve()), "--version"], text=True).strip()
     if version_output != f"scip-tsrs {version}":
         raise SystemExit(f"Unexpected version output from {args.binary}: {version_output}")

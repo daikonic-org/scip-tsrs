@@ -2,3 +2,4 @@
 /dist/
 /.runs/
 /index.scip
+__pycache__/

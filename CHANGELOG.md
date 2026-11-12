@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2-alpha.1
+
+- Prepare crates.io distribution using exact tsrs 0.24.0 registry dependencies. The 21 tsrs packages' 494 packaged Rust, TypeScript, and JSON source files match the original pinned checker source.
+- Test the packaged source archive against registry dependencies in release mode on Linux, alongside the macOS and ARM64 Linux release tests.
+- Add tag-checked crates.io publishing after the complete build matrix, with a manual first-publish token path and OIDC trusted publishing for subsequent releases.
+- Include user documentation, tests, and attribution in the source package. Keep the existing v0.2.1 GitHub release unchanged.
+
 ## 0.2.1
 
 - Preserve JSDoc tags in standard SCIP documentation, including parameter and return descriptions, templates, deprecation, examples, and custom tags.
