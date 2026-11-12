@@ -19,14 +19,14 @@ On `@sittir/typescript`, comparing scip-typescript **0.4.0** with scip-tsrs **0.
 
 Timings and memory are medians of three fresh-process runs on a busy ARM64 macOS host with warm filesystem caches. These measure the indexer process; consumer import, embeddings, and long-running daemon memory are separate costs. See the [methodology, raw samples, and occurrence comparison](docs/benchmarks.md).
 
-## Beyond scip-typescript 0.4.0
+## Additional Features
 
-- **Explicit symbol kinds.** Classes, interfaces, methods, properties, variables, parameters, and other declarations have typed SCIP metadata, so consumers can distinguish them without guessing from symbol spelling.
-- **Structured signatures and containment.** Source signatures use `signature_documentation`; enclosing symbols and occurrence ranges describe where declarations belong.
-- **Implementation and override links.** Direct class and interface heritage, plus matching instance members, use standard SCIP relationships. Member lookup includes declarations inherited by the base interface or class.
-- **Named local-symbol metadata.** Document-scoped `local N` identities also carry display names and kinds, including shadowed variables. Local IDs remain scoped to their document.
-- **External-symbol metadata.** Referenced global symbols defined outside the emitted documents have symbol information, with kinds, signatures, and documentation where available.
-- **Standalone native distribution.** One executable with bundled standard libraries; no Node.js runtime or compiler subprocess is required.
+- Explicit symbol kinds.
+- Structured signatures and containment.
+- Implementation and override relationships, including inherited members.
+- Local symbol names and kinds.
+- External symbol metadata.
+- Standalone native binary with bundled TypeScript libraries.
 
 These additions were checked against 0.4.0 output on the benchmark package. Project references, definitions and references, and JSDoc are also supported; they are shared capabilities rather than new additions. See [SCIP output and compatibility](docs/scip.md) for the exact semantics and limits.
 
