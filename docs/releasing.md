@@ -1,8 +1,8 @@
 # Releases and crates.io publishing
 
-The [Build and release workflow](../.github/workflows/build.yml) tests Apple silicon macOS, Linux ARM64, and Linux x86-64. A version tag must match `Cargo.toml`, including an alpha suffix. GitHub binary archives and crates.io source publication both depend on the complete test matrix.
+The [Build and release workflow](../.github/workflows/build.yml) tests Apple silicon macOS, Linux ARM64, and Linux x86-64. A version tag must match `Cargo.toml`, including any prerelease suffix. GitHub binary archives and crates.io source publication both depend on the complete test matrix.
 
-The first registry release is [scip-tsrs 0.2.2-alpha.1](https://crates.io/crates/scip-tsrs/0.2.2-alpha.1), also available as [GitHub binaries](https://github.com/daikonic-org/scip-tsrs/releases/tag/v0.2.2-alpha.1). Install it with `cargo install scip-tsrs --version 0.2.2-alpha.1 --locked`.
+The current release is [scip-tsrs 0.2.2](https://crates.io/crates/scip-tsrs/0.2.2), also available as [GitHub binaries](https://github.com/daikonic-org/scip-tsrs/releases/tag/v0.2.2). Install it with `cargo install scip-tsrs --version 0.2.2 --locked`. The first registry publication was `0.2.2-alpha.1`.
 
 ## Package verification
 
@@ -60,11 +60,11 @@ The variable prevents automatic publication before the one-time setup is complet
 
 ## Future releases
 
-Update the version and changelog, refresh the workspace lockfile, and wait for CI before pushing the matching tag. With trusted publishing configured and `CRATES_IO_PUBLISH_ENABLED=true`, the tag run publishes both GitHub archives and the crate after all three platform jobs pass. Use a prerelease version such as `0.2.2-alpha.1` for an alpha; the GitHub prerelease flag alone does not make a crates.io version a SemVer prerelease.
+Update the version and changelog, refresh the workspace lockfile, and wait for CI before pushing the matching tag. With trusted publishing configured and `CRATES_IO_PUBLISH_ENABLED=true`, the tag run publishes both GitHub archives and the crate after all three platform jobs pass. Release numbers use plain SemVer, such as `0.2.2`; the README retains the alpha maturity disclaimer. Explicit prerelease versions remain supported. The workflow marks a GitHub release as a prerelease only when its version has a prerelease suffix.
 
 ## Compiler dependencies
 
-The current source pins eight direct tsrs dependencies to `=0.24.0`; `Cargo.lock` records checksums for all 24 required tsrs crates. The unreleased documentation update adds `tsrs_ls` and its `tsrs_lsproto` and `tsrs_projectutil` dependencies. It calls a public documentation helper in-process and does not run an LSP server or change the checker version. The three added registry packages identify publication commit `383b683154ecfc0e17914b21363d0879411d23e9` in their VCS metadata.
+The current source pins eight direct tsrs dependencies to `=0.24.0`; `Cargo.lock` records checksums for all 24 required tsrs crates. The 0.2.2 documentation update adds `tsrs_ls` and its `tsrs_lsproto` and `tsrs_projectutil` dependencies. It calls a public documentation helper in-process and does not run an LSP server or change the checker version. The three added registry packages identify publication commit `383b683154ecfc0e17914b21363d0879411d23e9` in their VCS metadata.
 
 The published `0.2.2-alpha.1` source had seven direct dependencies and 21 tsrs crates. Before switching that release from the original git dependency, all 494 packaged Rust, TypeScript, and JSON source files were checked against commit `86de03ae428a956686af29177b50f0fdf4aee059` and matched. Those registry packages identify the same publication commit above.
 

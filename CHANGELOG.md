@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.2.2
 
 - Resolve inherited JSDoc through tsrs's public documentation API, including generic and transitive base members, static members, and referenced external symbols. Preserve explicit local comments and existing tag rendering.
 - Add documentation for parameters and type parameters from `@param` and `@template` comments.
 - Record comparator-specific parity evidence and a before/after performance control. Recover all 239 previously missing prose comments without changing occurrence tuples in the measured package.
+- Use plain release versions while retaining the README's alpha disclaimer. Mark GitHub releases as prereleases only when their version has a prerelease suffix.
 
 ## 0.2.2-alpha.1
 

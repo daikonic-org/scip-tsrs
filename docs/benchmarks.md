@@ -73,7 +73,7 @@ scip-typescript includes signatures in Markdown documentation, so zero structure
 
 Direct JSDoc descriptions and tags worked in the control fixture, but inherited prose was absent for 239 symbols where scip-typescript supplied it. Most were generated properties sharing a single inherited comment. Neither producer emitted read/write access-role bits in this comparison. See [current limitations](scip.md#current-limitations).
 
-An [unreleased documentation fix](parity.md) now recovers all 239 comments. Its separate before/after control retains 266/266 prose-bearing symbols and changes zero occurrence tuples. The follow-up resolved different dependency inputs, so its timings and tuple counts do not replace the release measurements above.
+The [documentation fix in 0.2.2](parity.md) now recovers all 239 comments. Its separate before/after control retains 266/266 prose-bearing symbols and changes zero occurrence tuples. The follow-up resolved different dependency inputs, so its timings and tuple counts do not replace the release measurements above.
 
 ## Run a comparison on your project
 

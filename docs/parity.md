@@ -1,6 +1,6 @@
 # Parity audit
 
-This audit covers the **unreleased inherited-documentation change** on 13 November 2026. It separates measured gaps against a named producer from features merely available in the SCIP protocol. It does not claim complete parity across languages.
+This audit covers the **inherited-documentation change released in 0.2.2** on 13 November 2026. It separates measured gaps against a named producer from features merely available in the SCIP protocol. It does not claim complete parity across languages.
 
 ## Comparators
 

@@ -2,7 +2,7 @@
 
 scip-tsrs emits the standard [SCIP protobuf](https://github.com/scip-code/scip/blob/main/scip.proto). The Rust binding dependency is `scip` 0.10.0; this is the binding version, not a separate scip-tsrs protocol. Consumers use the same index, document, occurrence, symbol-information, and relationship messages as other SCIP implementations.
 
-This document describes the current source, including the unreleased inherited-documentation fix. The [published benchmark](benchmarks.md) remains attributed to alpha `v0.2.1`; the [parity audit](parity.md) records the follow-up against scip-typescript 0.4.0. See [CLI usage](usage.md) for project loading.
+This document describes version 0.2.2, including the inherited-documentation fix. The [published benchmark](benchmarks.md) remains attributed to alpha `v0.2.1`; the [parity audit](parity.md) records the follow-up against scip-typescript 0.4.0. See [CLI usage](usage.md) for project loading.
 
 ## Occurrences and symbol names
 
@@ -58,7 +58,7 @@ Direct descriptions and tags are stored in `SymbolInformation.documentation`. Su
 
 When direct documentation is absent, the indexer uses tsrs's in-process language-service documentation helper. This resolves base-member comments and parameter/type-parameter descriptions, including generic and transitive interface inheritance. Local comments take precedence. Referenced external symbols use the same lookup while their project's checker is still alive; no language-server process is started.
 
-The published benchmark found 239 missing inherited comments: 238 redeclared properties of generic base interfaces and one inherited interface method. The unreleased fix recovers all 239. In the follow-up, prose text matches scip-typescript for all 266 prose-bearing symbols. These are measured cases, not complete JSDoc conformance. Resolved link-target navigation remains unverified; see the [comparator-specific audit](parity.md).
+The published benchmark found 239 missing inherited comments: 238 redeclared properties of generic base interfaces and one inherited interface method. The 0.2.2 fix recovers all 239. In the follow-up, prose text matches scip-typescript for all 266 prose-bearing symbols. These are measured cases, not complete JSDoc conformance. Resolved link-target navigation remains unverified; see the [comparator-specific audit](parity.md).
 
 ## Current limitations
 

@@ -32,18 +32,18 @@ These additions were checked against 0.4.0 output on the benchmark package. Proj
 
 ## Install and use
 
-With Rust 1.99 or newer, install the alpha from [crates.io](https://crates.io/crates/scip-tsrs/0.2.2-alpha.1):
+With Rust 1.99 or newer, install from [crates.io](https://crates.io/crates/scip-tsrs/0.2.2):
 
 ```sh
-cargo install scip-tsrs --version 0.2.2-alpha.1 --locked
+cargo install scip-tsrs --version 0.2.2 --locked
 ```
 
-Download a prebuilt archive from [GitHub Releases](https://github.com/daikonic-org/scip-tsrs/releases/tag/v0.2.2-alpha.1) to install without a Rust toolchain. Extract it and put `scip-tsrs` on your `PATH`. Releases include SHA-256 checksums. Supported binaries cover Apple silicon macOS, Linux ARM64, and Linux x86-64.
+Download a prebuilt archive from [GitHub Releases](https://github.com/daikonic-org/scip-tsrs/releases/tag/v0.2.2) to install without a Rust toolchain. Extract it and put `scip-tsrs` on your `PATH`. Releases include SHA-256 checksums. Supported binaries cover Apple silicon macOS, Linux ARM64, and Linux x86-64.
 
 To build the same release from its Git tag:
 
 ```sh
-cargo install --git https://github.com/daikonic-org/scip-tsrs --tag v0.2.2-alpha.1 --locked
+cargo install --git https://github.com/daikonic-org/scip-tsrs --tag v0.2.2 --locked
 ```
 
 Run the indexer with a project directory or a path to its TypeScript config. Without a project argument, it uses the current directory.
@@ -62,7 +62,7 @@ The index uses the standard [SCIP protobuf](https://github.com/scip-code/scip/bl
 
 Alpha limitations include missing `ReadAccess`/`WriteAccess` occurrence flags, JSDoc link-target resolution, full override compatibility checking, complex mixins, and JSX-specific parity. TypeScript 7 checker and library differences also prevent exact scip-typescript tuple equality. [Compatibility details and known gaps](docs/scip.md#current-limitations).
 
-The inherited-documentation fix in the current source is unreleased. The [parity audit](docs/parity.md) identifies the comparator for each claim and records its validation.
+Version 0.2.2 includes inherited documentation. The [parity audit](docs/parity.md) identifies the comparator for each claim and records its validation.
 
 ## Documentation
 
