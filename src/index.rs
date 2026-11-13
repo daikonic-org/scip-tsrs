@@ -149,7 +149,7 @@ pub(super) fn write_index(
             .write_to_writer(&mut output)?;
         }
         if let Some(metadata) = metadata {
-            for info in metadata.into_external_symbols() {
+            for info in metadata.into_external_symbols(&mut checker) {
                 if !defined.contains(&info.symbol) {
                     external.entry(info.symbol.clone()).or_insert(info);
                 }
@@ -407,7 +407,13 @@ impl FileIndexer<'_, '_> {
         };
         let typed_enclosing_range = match (&mut self.metadata, role) {
             (Some(metadata), DEFINITION) => {
-                metadata.define(&mut self.document, &symbol, decl, enclosing_symbol);
+                metadata.define(
+                    &mut self.document,
+                    &symbol,
+                    decl,
+                    enclosing_symbol,
+                    self.checker,
+                );
                 metadata::enclosing_range(self.file, decl).map(encode_enclosing_range)
             }
             (Some(metadata), _) => {

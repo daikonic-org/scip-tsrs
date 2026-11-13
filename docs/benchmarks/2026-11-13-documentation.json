@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-13",
+  "project": "@sittir/typescript captured package snapshot, currently resolved dependencies",
+  "inputs": {
+    "typescript": "5.9.3",
+    "root_files": 135,
+    "program_files": 1077,
+    "read_inputs": 1135,
+    "sha256": "6dad13e7bd8939d1d3bcba0e1ec8ed588e6c5220043f37b24ff228b72875c81b"
+  },
+  "samples": [
+    {
+      "pair": 1,
+      "producer": "before",
+      "wall_seconds": 1.89,
+      "cpu_seconds": 1.91,
+      "peak_rss_bytes": 419004416,
+      "output_bytes": 37215608
+    },
+    {
+      "pair": 1,
+      "producer": "after",
+      "wall_seconds": 1.45,
+      "cpu_seconds": 1.69,
+      "peak_rss_bytes": 418562048,
+      "output_bytes": 37284392
+    },
+    {
+      "pair": 2,
+      "producer": "after",
+      "wall_seconds": 1.52,
+      "cpu_seconds": 1.6800000000000002,
+      "peak_rss_bytes": 417398784,
+      "output_bytes": 37284392
+    },
+    {
+      "pair": 2,
+      "producer": "before",
+      "wall_seconds": 1.49,
+      "cpu_seconds": 1.65,
+      "peak_rss_bytes": 419954688,
+      "output_bytes": 37215608
+    },
+    {
+      "pair": 3,
+      "producer": "before",
+      "wall_seconds": 1.43,
+      "cpu_seconds": 1.67,
+      "peak_rss_bytes": 415203328,
+      "output_bytes": 37215608
+    },
+    {
+      "pair": 3,
+      "producer": "after",
+      "wall_seconds": 1.4,
+      "cpu_seconds": 1.66,
+      "peak_rss_bytes": 418856960,
+      "output_bytes": 37284392
+    }
+  ],
+  "binaries": {
+    "before": {
+      "bytes": 20137456,
+      "sha256": "c289c108a7a1ec86add09fa0edb53ec39f32b70a240df7557eaa317d31d0d068"
+    },
+    "after": {
+      "bytes": 20264160,
+      "sha256": "6aabe7d1e4d917455621a3f2a19e7711372643f8bd2475dd9dac8df1b853d996"
+    }
+  },
+  "before": {
+    "wall_seconds": 1.49,
+    "cpu_seconds": 1.67,
+    "peak_rss_bytes": 419004416,
+    "output_bytes": 37215608
+  },
+  "after": {
+    "wall_seconds": 1.45,
+    "cpu_seconds": 1.6800000000000002,
+    "peak_rss_bytes": 418562048,
+    "output_bytes": 37284392
+  },
+  "final_inputs": {
+    "typescript": "5.9.3",
+    "root_files": 135,
+    "program_files": 1077,
+    "read_inputs": 1135,
+    "sha256": "6dad13e7bd8939d1d3bcba0e1ec8ed588e6c5220043f37b24ff228b72875c81b"
+  },
+  "occurrences": {
+    "before": 247164,
+    "after": 247164,
+    "changed": 0,
+    "stock": 247074,
+    "common": 246987,
+    "common_shared": 246177,
+    "recall": 0.996369508730178,
+    "precision": 0.9967204751667091
+  },
+  "documentation": {
+    "fresh": {
+      "stock_prose": 266,
+      "before_retained": 27,
+      "after_retained": 266,
+      "after_exact_text": 266
+    },
+    "previous_239": {
+      "all": 239,
+      "now_present": 239,
+      "exact_text": 239
+    }
+  },
+  "fixture": {
+    "stock_tuples": 52,
+    "native_tuples": 52,
+    "shared_tuples": 52,
+    "stock_prose_symbols": 16,
+    "prose_retained": 16,
+    "exact_text": 15,
+    "note": "The function has the existing direct tag rendering in addition to its retained prose."
+  },
+  "differences": [
+    {
+      "cause": "Local identity/order",
+      "stock_only": 714,
+      "native_only": 714
+    },
+    {
+      "cause": "Legacy ESNext library mapping",
+      "stock_only": 152,
+      "native_only": 0
+    },
+    {
+      "cause": "Node imported/ambient declaration resolution at the same location",
+      "stock_only": 23,
+      "native_only": 23
+    },
+    {
+      "cause": "Type-literal descriptor ordinal",
+      "stock_only": 5,
+      "native_only": 5
+    },
+    {
+      "cause": "Contextual object-literal definition versus base property reference",
+      "stock_only": 3,
+      "native_only": 3
+    },
+    {
+      "cause": "Additional TS7 Node and derived member resolutions (58 Node symbols, 4 library members, 3 index-signature locals)",
+      "stock_only": 0,
+      "native_only": 65
+    }
+  ]
+}
