@@ -211,6 +211,95 @@ fn preserves_existing_output_when_indexing_fails() {
 }
 
 #[test]
+fn inherits_documentation_without_changing_occurrences() {
+    let directory = tempfile::tempdir().unwrap();
+    project(directory.path());
+    fs::write(
+        directory.path().join("api.ts"),
+        include_str!("fixtures/documentation.ts"),
+    )
+    .unwrap();
+    fs::write(directory.path().join("client.ts"), "export {};\n").unwrap();
+    let rich = generate(directory.path(), "rich.scip", &[]);
+    let minimal = generate(directory.path(), "minimal.scip", &["--minimal"]);
+    assert_eq!(tuples(&rich), tuples(&minimal));
+    for (suffix, expected) in [
+        (
+            "DerivedInterface#work().",
+            "Interface method documentation.",
+        ),
+        (
+            "GenericDerived#args.",
+            "Generic interface property documentation.",
+        ),
+        (
+            "Transitive#args.",
+            "Generic interface property documentation.",
+        ),
+        ("OwnProperty#args.", "Own property documentation."),
+        ("Child#work().", "Parent method documentation."),
+        ("Child#value.", "Parent property documentation."),
+        ("Child#make().", "Parent static method documentation."),
+        ("Own#work().", "Own method documentation."),
+        ("generic().[T]", "Documented type parameter."),
+        ("generic().(value)", "Documented parameter."),
+    ] {
+        let info = symbol(&rich, suffix);
+        assert!(
+            info.documentation.iter().any(|doc| doc.contains(expected)),
+            "{suffix}: expected {expected:?}, got {:?}",
+            info.documentation
+        );
+    }
+    assert!(
+        !symbol(&rich, "Own#work().")
+            .documentation
+            .iter()
+            .any(|doc| doc.contains("Parent method documentation."))
+    );
+    assert!(
+        !symbol(&rich, "OwnProperty#args.")
+            .documentation
+            .iter()
+            .any(|doc| doc.contains("Generic interface property documentation."))
+    );
+}
+
+#[test]
+fn inherits_documentation_for_external_symbols() {
+    let directory = tempfile::tempdir().unwrap();
+    project(directory.path());
+    let dependency = directory.path().join("node_modules/external-docs");
+    fs::create_dir_all(&dependency).unwrap();
+    fs::write(
+        dependency.join("package.json"),
+        r#"{"name":"external-docs","version":"1.0.0","types":"index.d.ts"}"#,
+    )
+    .unwrap();
+    fs::write(
+        dependency.join("index.d.ts"),
+        "export interface Base {\n/** External property documentation. */\nvalue: string;\n}\nexport interface Derived extends Base { value: string; }\n",
+    )
+    .unwrap();
+    fs::write(
+        directory.path().join("api.ts"),
+        "import type { Derived } from 'external-docs';\nexport function read(item: Derived) { return item.value; }\n",
+    )
+    .unwrap();
+    fs::write(directory.path().join("client.ts"), "export {};\n").unwrap();
+    let rich = generate(directory.path(), "rich.scip", &[]);
+    let minimal = generate(directory.path(), "minimal.scip", &["--minimal"]);
+    assert_eq!(tuples(&rich), tuples(&minimal));
+    assert_eq!(rich.documents.len(), 2);
+    let info = rich
+        .external_symbols
+        .iter()
+        .find(|info| info.symbol.ends_with("Derived#value."))
+        .expect("external derived property");
+    assert_eq!(info.documentation, ["External property documentation."]);
+}
+
+#[test]
 fn preserves_jsdoc_tags_examples_and_tag_only_comments_in_javascript() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path();

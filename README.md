@@ -60,12 +60,15 @@ Project references are followed automatically, including empty solution configs,
 
 The index uses the standard [SCIP protobuf](https://github.com/scip-code/scip/blob/main/scip.proto), through the `scip` Rust crate 0.10.0, with typed ranges and explicit UTF-16 columns. Symbol names follow scip-typescript conventions, including package-qualified names and `key<N>:` object members. Direct JSDoc descriptions and tags use the standard documentation field.
 
-Alpha limitations include missing `ReadAccess`/`WriteAccess` occurrence flags, inherited JSDoc and link-target resolution, full override compatibility checking, complex mixins, and JSX-specific parity. TypeScript 7 checker and library differences also prevent exact scip-typescript tuple equality. [Compatibility details and known gaps](docs/scip.md#current-limitations).
+Alpha limitations include missing `ReadAccess`/`WriteAccess` occurrence flags, JSDoc link-target resolution, full override compatibility checking, complex mixins, and JSX-specific parity. TypeScript 7 checker and library differences also prevent exact scip-typescript tuple equality. [Compatibility details and known gaps](docs/scip.md#current-limitations).
+
+The inherited-documentation fix in the current source is unreleased. The [parity audit](docs/parity.md) identifies the comparator for each claim and records its validation.
 
 ## Documentation
 
 - [CLI usage and project references](docs/usage.md)
 - [SCIP fields, local variables, relationships, and limitations](docs/scip.md)
+- [Comparator-specific parity audit](docs/parity.md)
 - [Benchmarks, raw samples, and occurrence compatibility](docs/benchmarks.md)
 - [Release workflow and crates.io publishing](docs/releasing.md)
 - [Changelog](CHANGELOG.md)

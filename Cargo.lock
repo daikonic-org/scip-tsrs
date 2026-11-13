@@ -573,6 +573,7 @@ dependencies = [
  "tsrs_checker",
  "tsrs_compiler",
  "tsrs_core",
+ "tsrs_ls",
  "tsrs_scanner",
  "tsrs_tsoptions",
  "tsrs_vfs",
@@ -894,6 +895,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "tsrs_ls"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f43793826b35278017afecec90251d734e8c5b5795ae490269475775725cbcb6"
+dependencies = [
+ "bitflags",
+ "indexmap",
+ "rayon",
+ "rustc-hash",
+ "tsrs_ast",
+ "tsrs_astnav",
+ "tsrs_binder",
+ "tsrs_checker",
+ "tsrs_compiler",
+ "tsrs_core",
+ "tsrs_diagnostics",
+ "tsrs_lsproto",
+ "tsrs_module",
+ "tsrs_modulespecifiers",
+ "tsrs_parser",
+ "tsrs_printer",
+ "tsrs_projectutil",
+ "tsrs_scanner",
+ "tsrs_sourcemap",
+ "tsrs_spanmap",
+ "tsrs_tsoptions",
+ "tsrs_vfs",
+]
+
+[[package]]
+name = "tsrs_lsproto"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cab93121f898bfb7d6ee3d3b46554d321301ae25a93932c3d122a4f99138581e"
+dependencies = [
+ "rustc-hash",
+ "tsrs_core",
+ "tsrs_vfs",
+]
+
+[[package]]
 name = "tsrs_module"
 version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -948,6 +990,16 @@ dependencies = [
  "tsrs_core",
  "tsrs_scanner",
  "tsrs_sourcemap",
+]
+
+[[package]]
+name = "tsrs_projectutil"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8303c48c486aac6427ec051309b095aabe3c70530e24db90184d2c846b63e17d"
+dependencies = [
+ "rustc-hash",
+ "tsrs_core",
 ]
 
 [[package]]

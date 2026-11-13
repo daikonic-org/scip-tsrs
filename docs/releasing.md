@@ -64,7 +64,9 @@ Update the version and changelog, refresh the workspace lockfile, and wait for C
 
 ## Compiler dependencies
 
-The seven direct tsrs dependencies are pinned to `=0.24.0`; `Cargo.lock` records checksums for all 21 required tsrs crates. Before switching from the original git dependency, all 494 packaged Rust, TypeScript, and JSON source files were checked against commit `86de03ae428a956686af29177b50f0fdf4aee059` and matched. The registry packages identify publication commit `383b683154ecfc0e17914b21363d0879411d23e9` in their VCS metadata.
+The current source pins eight direct tsrs dependencies to `=0.24.0`; `Cargo.lock` records checksums for all 24 required tsrs crates. The unreleased documentation update adds `tsrs_ls` and its `tsrs_lsproto` and `tsrs_projectutil` dependencies. It calls a public documentation helper in-process and does not run an LSP server or change the checker version. The three added registry packages identify publication commit `383b683154ecfc0e17914b21363d0879411d23e9` in their VCS metadata.
+
+The published `0.2.2-alpha.1` source had seven direct dependencies and 21 tsrs crates. Before switching that release from the original git dependency, all 494 packaged Rust, TypeScript, and JSON source files were checked against commit `86de03ae428a956686af29177b50f0fdf4aee059` and matched. Those registry packages identify the same publication commit above.
 
 The upstream [0.25.0 CLI/npm release](https://github.com/oxc-project/tsrs/releases/tag/v0.25.0) states that the type checker is unchanged from 0.24.0. At setup time, the Rust libraries on crates.io were still 0.24.0. Publishing scip-tsrs therefore uses those registry libraries without requiring a compiler fork or a Git-only dependency.
 

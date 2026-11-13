@@ -3,6 +3,7 @@ use std::path::Path;
 
 use scip::types::{Document, Relationship, Signature, SymbolInformation, symbol_information};
 use tsrs_ast::{self as ast, Kind, ModifierFlags, Node, SourceFile};
+use tsrs_checker::Checker;
 use tsrs_core::P;
 use tsrs_scanner::{get_text_of_jsdoc_comment, get_text_of_node, get_token_pos_of_node};
 
@@ -28,10 +29,10 @@ impl IndexMetadata {
         }
     }
 
-    pub fn into_external_symbols(self) -> Vec<SymbolInformation> {
+    pub fn into_external_symbols(self, checker: &mut Checker) -> Vec<SymbolInformation> {
         self.references
             .into_iter()
-            .map(|(name, decl)| symbol_information(name, decl, String::new()))
+            .map(|(name, decl)| symbol_information(name, decl, String::new(), checker))
             .collect()
     }
 }
@@ -64,11 +65,16 @@ impl<'a> FileMetadata<'a> {
         name: &str,
         decl: P<Node>,
         enclosing_symbol: String,
+        checker: &mut Checker,
     ) {
         if self.seen.insert(name.to_owned()) {
             self.definitions.push((doc.symbols.len(), decl));
-            doc.symbols
-                .push(symbol_information(name.to_owned(), decl, enclosing_symbol));
+            doc.symbols.push(symbol_information(
+                name.to_owned(),
+                decl,
+                enclosing_symbol,
+                checker,
+            ));
             self.index.define(name);
         }
     }
@@ -232,6 +238,7 @@ fn symbol_information(
     symbol: String,
     decl: P<Node>,
     enclosing_symbol: String,
+    checker: &mut Checker,
 ) -> SymbolInformation {
     let file = ast::get_source_file_of_node(decl);
     let display_name = match decl.kind() {
@@ -262,14 +269,14 @@ fn symbol_information(
         kind: symbol_kind(decl.kind()).into(),
         enclosing_symbol,
         documentation: file
-            .map(|file| documentation(decl, file))
+            .map(|file| documentation(decl, file, checker))
             .unwrap_or_default(),
         signature_documentation: signature_documentation.into(),
         ..SymbolInformation::default()
     }
 }
 
-fn documentation(decl: P<Node>, file: P<SourceFile>) -> Vec<String> {
+fn documentation(decl: P<Node>, file: P<SourceFile>, checker: &mut Checker) -> Vec<String> {
     let owner = if decl.kind() == Kind::VariableDeclaration {
         decl.parent()
             .and_then(|list| list.parent())
@@ -278,7 +285,7 @@ fn documentation(decl: P<Node>, file: P<SourceFile>) -> Vec<String> {
     } else {
         decl
     };
-    owner
+    let mut documentation: Vec<_> = owner
         .jsdoc(Some(file.get()))
         .iter()
         .filter(|doc| doc.kind() == Kind::JSDoc)
@@ -306,7 +313,17 @@ fn documentation(decl: P<Node>, file: P<SourceFile>) -> Vec<String> {
                 .join("\n\n")
         })
         .filter(|text| !text.is_empty())
-        .collect()
+        .collect();
+    if documentation.is_empty() {
+        let symbol = checker.get_symbol_of_declaration_exported(decl);
+        // Use the language service's checker-aware inheritance and parameter
+        // lookup; a local declaration's rendered comment always takes precedence.
+        let inherited = tsrs_ls::get_symbol_documentation_comment(checker, symbol);
+        if !inherited.is_empty() {
+            documentation.push(inherited);
+        }
+    }
+    documentation
 }
 
 /// Keep the compiler's tag boundaries and source content, including custom
